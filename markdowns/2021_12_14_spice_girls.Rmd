@@ -1,0 +1,160 @@
+---
+title: "Spice Girls"
+author: "Sara"
+date: "`r Sys.Date()`"
+output: 
+  rmdformats::downcute
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Getting ready
+load the packages required, load the data
+
+```{r, warning=FALSE, message=FALSE}
+library(dplyr)
+library(ggplot2)
+library(popthemes)
+```
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load('2021-12-14')
+```
+
+```{r}
+studio_album_tracks <- tuesdata$studio_album_tracks
+glimpse(studio_album_tracks)
+```
+
+```{r}
+lyrics <- tuesdata$lyrics
+glimpse(lyrics)
+```
+
+```{r}
+related_artists <- tuesdata$related_artists
+glimpse(related_artists)
+```
+
+```{r}
+studio_album_tracks %>%
+  ggplot(mapping = aes(group = album_name, x = acousticness, color = album_name, fill = album_name)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Acousticness by Album")
+```
+
+```{r}
+studio_album_tracks %>%
+  ggplot(mapping = aes(group = album_name, x = danceability, color = album_name, fill = album_name)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Danceability by Album")
+```
+
+```{r}
+studio_album_tracks %>%
+  ggplot(mapping = aes(group = album_name, x = energy, color = album_name, fill = album_name)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Energy by Album")
+```
+
+```{r}
+studio_album_tracks %>%
+  ggplot(mapping = aes(group = album_name, x = valence, color = album_name, fill = album_name)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Valence by Album")
+```
+
+```{r}
+studio_album_tracks %>%
+  ggplot(mapping = aes(group = album_name, x = liveness, color = album_name, fill = album_name)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Liveness by Album")
+```
+
+```{r}
+studio_album_tracks %>%
+  ggplot(mapping = aes(group = album_name, x = instrumentalness, color = album_name, fill = album_name)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Instrumentalness by Album")
+```
+
+```{r}
+studio_album_tracks %>%
+  ggplot(mapping = aes(group = album_name, x = loudness, color = album_name, fill = album_name)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Loudness by Album")
+```
+
+```{r}
+my_colors = c("#E0BFDF", "#ABCEDF", "#E8DE97")
+```
+
+
+```{r}
+p <- GGally::ggparcoord(studio_album_tracks, 
+                   columns = c(9, 7, 15, 6), 
+                   groupColumn = 22, 
+                   #order = "allClass", 
+                   #scale = "uniminmax", 
+                   showPoints = TRUE,
+                   alphaLines = 1) +
+  labs(title = "Spotify mesasures Spice Girls",
+       subtitle = "Different measures as calculated by spotify for Spice Girls songs by album",
+       x = "",
+       y = "",
+       caption = "Data source: Spice Girls by Jacquie Tran | Created by @SaraHaenzi | #TidyTuesday",
+       color = "Album") + 
+  scale_color_manual(values = my_colors) + 
+  theme_minimal() +
+  scale_x_discrete(expand = c(0.1, 0.1)) +
+  scale_y_continuous(minor_breaks = NULL) +
+  theme(#panel.background = element_rect(fill = NA),
+    #panel.grid = element_line(colour = "grey", size = 0.6),
+    plot.title.position = "plot",
+    plot.caption.position = "plot",
+    plot.caption = element_text(size = 8),
+    plot.title = element_text(size = 18)
+    )
+p
+```
+
+want the text of the legend to be the same color as the line
+
+```{r}
+studio_album_tracks <- studio_album_tracks %>%
+  mutate(album_color = case_when(album_name == "Forever" ~ my_colors[[1]],
+                                 album_name == "Spice" ~ my_colors[[2]],
+                                 album_name == "Spiceworld" ~ my_colors[[3]])) %>%
+  mutate(gen_label = stringr::str_glue(
+      "<p style='color:{album_color}'>",
+      "{album_name}",
+      "</p>"))
+```
+
+
+```{r}
+gen_colors <- studio_album_tracks %>% 
+  distinct(album_color) %>%
+  pull(album_color)
+gen_labels <- studio_album_tracks %>% 
+  distinct(gen_label) %>% 
+  pull(gen_label)
+```
+
+```{r}
+p +
+  scale_color_manual(values = gen_colors,
+                     labels = gen_labels) +
+  theme(legend.text = ggtext::element_markdown())
+```
+
+
+```{r}
+ggsave("spice_girls.png", dpi = 300, height = 5, width = 7)
+```
+
+
+
